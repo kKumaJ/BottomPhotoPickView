@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">BottomPhotoPickView</string>
+
+    <string name="picker_bottom_sheet_behavior">com.kumaj.bottomphotopickview.PickerBottomBehavior</string>
+
+</resources>
