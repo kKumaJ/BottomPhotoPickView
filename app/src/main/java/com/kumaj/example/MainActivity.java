@@ -2,6 +2,7 @@ package com.kumaj.example;
 
 import android.Manifest;
 import android.app.Activity;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -11,7 +12,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.kumaj.bottomphotopickview.BottomImagePickerView;
+import com.kumaj.bottomphotopickview.ImageAdapter;
 import com.kumaj.bottomphotopickview.PickerBottomBehavior;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_READ_EXTERNAL_STORAGE = 2;
 
     private BottomImagePickerView mBottomImagePickerView;
+    private SimpleDraweeView mSimpleDraweeView;
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,8 +37,16 @@ public class MainActivity extends AppCompatActivity {
         checkPermission();
         setContentView(R.layout.activity_main);
         mBottomImagePickerView = (BottomImagePickerView) findViewById(R.id.pick_view);
+        mSimpleDraweeView = (SimpleDraweeView) findViewById(R.id.simpleDraweeView);
 
         PickerBottomBehavior behavior  = PickerBottomBehavior.from(mBottomImagePickerView);
+
+        mBottomImagePickerView.setOnImagePickListener(new ImageAdapter.OnImagePickListener() {
+            @Override public boolean onImagePick(Uri uri) {
+                mSimpleDraweeView.setImageURI(uri);
+                return false;
+            }
+        });
 
         mBottomImagePickerView.post(() -> behavior.setPeekHeight(mBottomImagePickerView.getPeekHeight()));
 

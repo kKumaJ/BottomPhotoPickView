@@ -18,6 +18,7 @@ import java.util.List;
 public class PickerFragment extends Fragment {
 
     private static final String IMAGE_LIST = "image_list";
+    private static final String IMAGE_LISTENER = "image_listener";
 
     public static final int IMAGE_SIZE_UNIT = 10;
     public static final int DECORATION_SIZE_UNIT = 1;
@@ -26,23 +27,31 @@ public class PickerFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
     private ImageAdapter mImageAdapter;
+    private ImageAdapter.OnImagePickListener mOnImagePickListener;
     private List<Image> mImages;
     private int mUnit;
 
-    public static PickerFragment newInstance(List<Image> images) {
-        Bundle bundle = new Bundle();
-        bundle.putParcelableArrayList(IMAGE_LIST, (ArrayList<? extends Parcelable>) images);
+    public static PickerFragment newInstance(List<Image> images, ImageAdapter.OnImagePickListener listener) {
         PickerFragment fragment = new PickerFragment();
-        fragment.setArguments(bundle);
+        fragment.setImages(images);
+        fragment.setOnImagePickListener(listener);
         return fragment;
+    }
+
+    public void setOnImagePickListener(ImageAdapter.OnImagePickListener listener) {
+        this.mOnImagePickListener = listener;
+    }
+
+    public void setImages(List<Image> images) {
+        mImages = images;
     }
 
     @Override public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mImages = getArguments().getParcelableArrayList(IMAGE_LIST);
         WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
         mUnit = getUnitSize(wm);
         mImageAdapter = new ImageAdapter(mImages, mUnit * IMAGE_SIZE_UNIT);
+        mImageAdapter.setOnImagePickListener(mOnImagePickListener);
     }
 
     @Nullable @Override
@@ -53,6 +62,7 @@ public class PickerFragment extends Fragment {
 
     @Override public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_picker);
         mRecyclerView.setAdapter(mImageAdapter);
         //weak reference
@@ -63,14 +73,23 @@ public class PickerFragment extends Fragment {
         mRecyclerView.setPadding(mUnit * DECORATION_SIZE_UNIT, 0, 0, mUnit * DECORATION_SIZE_UNIT);
     }
 
+    @Override public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null) {
+            mImages = savedInstanceState.getParcelableArrayList(IMAGE_LIST);
+            mImageAdapter.setImages(mImages);
+        }
+    }
+
+    @Override public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(IMAGE_LIST, (ArrayList<? extends Parcelable>) mImages);
+    }
+
     public static int getUnitSize(WindowManager wm) {
         Display display = wm.getDefaultDisplay();
         int screenWidth = display.getWidth();
         return screenWidth / (DECORATION_COUNT + IMAGE_COUNT * IMAGE_SIZE_UNIT);
     }
 
-    public void setImages(List<Image> images) {
-        mImages = images;
-        mImageAdapter.setImages(images);
-    }
 }
